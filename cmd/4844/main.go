@@ -65,18 +65,17 @@ func runSendBlob(cc *cli.Context) error {
 	tip, _ := backend.SuggestGasTipCap(context.Background())
 	blob, _ := randomBlobData()
 	nonce = nonce - 2
-	tx := txfuzz.New4844Tx(nonce, nil, 500000, chainid, tip.Mul(tip, common.Big1), gp.Mul(gp, common.Big1), common.Big1, TxData4844, big.NewInt(1000000), blob, make(types.AccessList, 0))
+	to := &common.Address{}
+	tx := txfuzz.New4844Tx(nonce, to, 500000, chainid, tip.Mul(tip, common.Big1), gp.Mul(gp, common.Big1), common.Big1, TxData4844, big.NewInt(1000000), blob, make(types.AccessList, 0))
 	signedTx, _ := types.SignTx(&tx.Transaction, types.NewCancunSigner(chainid), sk)
 	tx.Transaction = *signedTx
-	if err := backend.SendTransaction(context.Background(), signedTx); err != nil {
-		return err
-	}
 	rlpData, err := rlp.EncodeToBytes(tx)
 	if err != nil {
 		return err
 	}
-	cl.CallContext(context.Background(), nil, "eth_sendRawTransaction", hexutil.Encode(rlpData))
-	return nil
+	// manually prepend 0x3 (deneb) encoding byte
+	//rlpData = append([]byte{0x3}, rlpData[:]...)
+	return cl.CallContext(context.Background(), nil, "eth_sendRawTransaction", hexutil.Encode(rlpData))
 }
 
 func getRealBackend() (*rpc.Client, *ecdsa.PrivateKey) {
