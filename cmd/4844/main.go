@@ -65,7 +65,7 @@ func runSendBlob(cc *cli.Context) error {
 	tip, _ := backend.SuggestGasTipCap(context.Background())
 	blob, _ := randomBlobData()
 	nonce = nonce - 2
-	to := &common.Address{}
+	to := &sender
 	tx := txfuzz.New4844Tx(nonce, to, 500000, chainid, tip.Mul(tip, common.Big1), gp.Mul(gp, common.Big1), common.Big1, TxData4844, big.NewInt(1000000), blob, make(types.AccessList, 0))
 	signedTx, _ := types.SignTx(&tx.Transaction, types.NewCancunSigner(chainid), sk)
 	tx.Transaction = *signedTx
